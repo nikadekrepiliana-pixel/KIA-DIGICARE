@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Posyandu KIA - Lengkap dengan Grafik</title>
+    <script src="java kia (1).js"></script>
+    <link rel="stylesheet" href="css kia.css">
+    <!-- Libary SheetJS untuk Export Excel -->
+    <script src="java kia (1).js"></script>
+    
+    <!-- Libary Chart.js untuk Grafik Berat Badan -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <img src="c:\Users\nikad\Downloads\esa_unggul-removebg-preview.png" alt="Logo UEU" style="height:90px; object-fit:contain; margin-bottom:15px;">
+            <h2 class="login-title">Posyandu KIA</h2>
+            <p class="login-subtitle">Silakan login untuk melanjutkan</p>
+            
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" id="login-username" placeholder="Masukkan username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="login-password" placeholder="Masukkan password">
+            </div>
+            <button class="btn-login" onclick="doLogin()">MASUK SISTEM</button>
+            <p style="margin-top:15px; font-size:0.8rem; color:#666;">Default: user: <b>kader</b> | pass: <b>123</b></p>
+        </div>
+    </div>
+
+    <!-- 2. APLIKASI UTAMA -->
+    <div id="app-container" class="hidden">
+        
+        <!-- Overlay untuk Sidebar HP -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="c:\Users\nikad\Downloads\esa_unggul-removebg-preview.png" alt="Logo UEU" style="height:65px; object-fit:contain; margin-bottom:10px;">
+                <h3>Posyandu KIA</h3>
+                <small>Sistem Digital</small>
+            </div>
+
+            <ul class="nav-links">
+                <div class="nav-category">Menu Utama</div>
+                <li><a onclick="nav('dashboard')" id="link-dashboard" class="active"><span class="nav-icon">📊</span> Dashboard</a></li>
+                
+                <div class="nav-category">Ibu Hamil</div>
+                <li><a onclick="nav('ibu-data')" id="link-ibu-data"><span class="nav-icon">🤰</span> Data & Identitas</a></li>
+                <li><a onclick="nav('ibu-panduan')" id="link-ibu-panduan"><span class="nav-icon">📖</span> Panduan Kehamilan</a></li>
+
+                <div class="nav-category">Persalinan & Nifas</div>
+                <li><a onclick="nav('persalinan-panduan')" id="link-persalinan-panduan"><span class="nav-icon">🏥</span> Panduan Persalinan</a></li>
+                <li><a onclick="nav('nifas-panduan')" id="link-nifas-panduan"><span class="nav-icon">🍼</span> Panduan Nifas & Bayi Baru</a></li>
+
+                <div class="nav-category">Anak & Balita</div>
+                <li><a onclick="nav('anak-data')" id="link-anak-data"><span class="nav-icon">👶</span> Data & Grafik BB</a></li>
+                <li><a onclick="nav('anak-panduan')" id="link-anak-panduan"><span class="nav-icon">🥗</span> Panduan Balita (ASI/MPASI)</a></li>
+                
+                <div class="nav-category">Sistem</div>
+                <li><a onclick="nav('rekap')" id="link-rekap"><span class="nav-icon">📥</span> Rekap & Excel</a></li>
+            </ul>
+
+            <div class="logout-area">
+                <button class="btn btn-danger" style="width:100%; justify-content:center;" onclick="doLogout()">Keluar (Logout)</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div style="display:flex; align-items:center;">
+                    <div class="mobile-toggle" onclick="toggleSidebar()">☰</div>
+                    <h1 id="page-title">Dashboard</h1>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-gray);">
+                    <span id="current-date"></span> | Petugas Kader
+                </div>
+            </header>
+
+            <div id="toast" class="toast">Notifikasi</div>
+
+            <!-- 1. DASHBOARD -->
+            <section id="dashboard" class="section active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="stat-number" id="count-ibu">0</div>
+                        <div class="stat-label">Ibu Hamil Terdaftar</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-number" id="count-anak">0</div>
+                        <div class="stat-label">Anak & Balita</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-number" id="count-anc">0</div>
+                        <div class="stat-label">Total Kunjungan ANC</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Selamat Datang di Sistem Posyandu KIA</h3>
+                    <p style="margin-top: 10px; color: var(--text-gray);">
+                        Aplikasi ini membantu pencatatan kesehatan Ibu dan Anak sesuai standar Buku KIA. 
+                        Gunakan menu di samping untuk mencatat data identitas, memantau kehamilan, 
+                        atau melihat grafik tumbuh kembang anak.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 2. DATA IBU & IDENTITAS -->
+            <section id="ibu-data" class="section">
+                <div class="action-bar" style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <input type="text" id="search-ibu" class="form-control" style="width:250px;" placeholder="Cari Nama / NIK..." onkeyup="renderIbuList()">
+                    <button class="btn btn-primary" onclick="openModal('modal-ibu')">+ Tambah Ibu Hamil</button>
+                </div>
+                <div class="table-container">
+                    <table id="table-ibu">
+                        <thead>
+                            <tr>
+                                <th>Nama Ibu</th>
+                                <th>NIK</th>
+                                <th>Suami</th>
+                                <th>Usia Kehamilan</th>
+                                <th>HPHT / HPL</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-ibu"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. PANDUAN IBU HAMIL -->
+            <section id="ibu-panduan" class="section">
+                <div class="guide-grid">
+                    <div class="guide-card">
+                        <div class="guide-header">🥦 Nutrisi & Kebiasaan</div>
+                        <div class="guide-body">
+                            <ul class="guide-list">
+                                <li>Konsumsi makanan 4 sehat 5 sempurna.</li>
+                                <li>Minum 1 Tablet Tambah Darah (Fe) setiap hari.</li>
+                                <li>Minum air putih minimal 8 gelas sehari.</li>
+                                <li>Istirahat yang cukup, tidur malam minimal 8 jam.</li>
+                                <li>Hindari merokok, minum alkohol, dan kafein berlebih.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="guide-card">
+                        <div class="guide-header" style="background:#FEF2F2; color:#DC2626; border-color:#FCA5A5;">⚠️ Tanda Bahaya Kehamilan</div>
+                        <div class="guide-body">
+                            <p style="font-size:0.9rem; margin-bottom:10px;">Segera ke fasilitas kesehatan jika mengalami:</p>
+                            <ul class="guide-list">
+                                <li>Pendarahan dari jalan lahir.</li>
+                                <li>Sakit kepala hebat, pandangan kabur.</li>
+                                <li>Mual muntah hebat (hyperemesis).</li>
+                                <li>Demam tinggi.</li>
+                                <li>Gerak bayi berkurang atau tidak bergerak.</li>
+                                <li>Pembengkakan pada wajah dan tangan.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="guide-card">
+                        <div class="guide-header">🏥 Persiapan Persalinan</div>
+                        <div class="guide-body">
+                            <ul class="guide-list">
+                                <li>Siapkan tempat persalinan (Bidan/Rumah Sakit).</li>
+                                <li>Siapkan dana persalinan (JKN/KIS/Tabungan).</li>
+                                <li>Siapkan kendaraan ke fasilitas kesehatan.</li>
+                                <li>Siapkan baju bayi baru lahir.</li>
+                                <li>Pastikan darah suami sudah dicek (Golongan Darah).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. PANDUAN PERSALINAN -->
+            <section id="persalinan-panduan" class="section">
+                <div class="guide-card" style="margin-bottom:20px;">
+                    <div class="guide-header">🤱 Tanda-Tanda Akan Melahirkan</div>
+                    <div class="guide-body">
+                        <div class="form-row">
+                            <ul class="guide-list">
+                                <li>Kontraksi rahim yang teratur, makin lama makin kuat dan sering.</li>
+                                <li>Ketuban pecah (air keluar).</li>
+                                <li>Keluar lendir bercampur darah (bloody show).</li>
+                                <li>Sakit pinggang yang hebat.</li>
+                            </ul>
+                            <div style="background:#EFF6FF; padding:15px; border-radius:8px; font-size:0.9rem; color:#1E40AF;">
+                                <strong>Ingin tahu kapan waktu persalinan?</strong><br>
+                                Hitung HPL berdasarkan HPHT tanggal pertama haid terakhir + 280 hari atau 40 minggu.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="danger-box">
+                    <div class="danger-title">🚨 Tanda Bahaya Saat Hamil / Persalinan</div>
+                    <p style="font-size:0.95rem;">Segera rujuk ke rumah sakit jika terjadi:</p>
+                    <ul style="margin-left:20px; margin-top:5px; font-size:0.9rem;">
+                        <li>Letak sungsang / lintang.</li>
+                        <li>Kehamilan kembar.</li>
+                        <li>Pendarahan hebat sebelum persalinan.</li>
+                        <li>Riwayat operasi sesar sebelumnya.</li>
+                        <li>Lama bersalin (lebih dari 24 jam).</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 5. PANDUAN NIFAS & BAYI BARU LAHIR -->
+            <section id="nifas-panduan" class="section">
+                <div class="form-row">
+                    <div class="guide-card">
+                        <div class="guide-header">🧑‍⚕️ Perawatan Ibu Nifas</div>
+                        <div class="guide-body">
+                            <ul class="guide-list">
+                                <li>Minum obat yang diberikan bidan/dokter sampai habis.</li>
+                                <li>Konsumsi makanan bergizi untuk pemulihan.</li>
+                                <li>Istirahat yang cukup.</li>
+                                <li>Jaga kebersihan alat kelamin dan pakaian.</li>
+                                <li>Menyusui bayi segera (Inisiasi Menyusui Dini - IMD).</li>
+                                <li>Kontrol kembali ke bidan/dukun bayi pada hari ke-6 dan ke-42.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-header">👶 Perawatan Bayi Baru Lahir (0-28 Hari)</div>
+                        <div class="guide-body">
+                            <ul class="guide-list">
+                                <li>Segera beri ASI (ASI Eksklusif).</li>
+                                <li>Jaga kebersihan tangan sebelum memegang bayi.</li>
+                                <li>Jaga bayi tetap hangat.</li>
+                                <li>Lakukan perawatan tali pusat (jaga tetap kering dan bersih).</li>
+                                <li>Imunisasi Hepatitis B, BCG, dan Polio 1 sesuai jadwal.</li>
+                            </ul>
+                            <div class="danger-box" style="margin-top:15px;">
+                                <div class="danger-title">Bahaya Kuning (Jaundice)</div>
+                                <p>Jika kulit bayi kuning dalam 24 jam pertama atau kuning mencapai telapak tangan/kaki, segera ke dokter.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. DATA ANAK & TUMBUH KEMBANG -->
+            <section id="anak-data" class="section">
+                <div class="action-bar" style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <input type="text" id="search-anak" class="form-control" style="width:250px;" placeholder="Cari Nama Anak..." onkeyup="renderAnakList()">
+                    <button class="btn btn-primary" onclick="openModal('modal-anak')">+ Tambah Anak</button>
+                </div>
+                <div class="table-container">
+                    <table id="table-anak">
+                        <thead>
+                            <tr>
+                                <th>Nama Anak</th>
+                                <th>Tgl Lahir</th>
+                                <th>Nama Ortu</th>
+                                <th>BB Terakhir</th>
+                                <th>Status Gizi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-anak"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 7. PANDUAN BALITA -->
+            <section id="anak-panduan" class="section">
+                <div class="guide-card" style="margin-bottom:20px;">
+                    <div class="guide-header">🥣 Panduan MPASI & ASI</div>
+                    <div class="guide-body">
+                        <div class="form-row">
+                            <div>
+                                <h4 style="color:var(--primary); margin-bottom:5px;">0 - 6 Bulan (ASI Eksklusif)</h4>
+                                <p style="font-size:0.9rem;">Berikan hanya ASI tanpa air putih, susu formula, makanan/minuman lain. ASI mencukupi kebutuhan gizi dan cairan bayi.</p>
+                            </div>
+                            <div>
+                                <h4 style="color:var(--primary); margin-bottom:5px;">6 Bulan Keatas (MPASI)</h4>
+                                <ul class="guide-list" style="font-size:0.9rem;">
+                                    <li>Mulai beri makanan pendamping (tim saring, lumat).</li>
+                                    <li>Berikan 3x makan + 2x selingan sehari.</li>
+                                    <li>Konsisten memberikan ASI sampai 2 tahun.</li>
+                                    <li>Penuhi gizi seimbang (karbohidrat, protein, sayur, buah).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="guide-card">
+                        <div class="guide-header">💉 Jadwal Imunisasi Dasar</div>
+                        <div class="guide-body" style="font-size:0.85rem;">
+                            <table style="font-size:0.85rem; border:1px solid #eee;">
+                                <tr><td>0 bulan</td><td>Hepatitis B-1</td></tr>
+                                <tr><td>1 bulan</td><td>BCG, Polio 1, Hepatitis B-2</td></tr>
+                                <tr><td>2 bulan</td><td>DPT-HB-Hib 1, Polio 2</td></tr>
+                                <tr><td>3 bulan</td><td>DPT-HB-Hib 2, Polio 3</td></tr>
+                                <tr><td>4 bulan</td><td>DPT-HB-Hib 3, Polio 4</td></tr>
+                                <tr><td>9 bulan</td><td>Campak (MR)</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-header" style="background:#FEF2F2; color:#DC2626; border-color:#FCA5A5;">🚑 Tanda Bahaya Anak</div>
+                        <div class="guide-body">
+                            <p style="font-size:0.9rem; margin-bottom:5px;">Bawa segera ke dokter jika anak:</p>
+                            <ul class="guide-list">
+                                <li>Demam tinggi (>39°C) atau kejang.</li>
+                                <li>Sulit bernafas atau sesak nafas.</li>
+                                <li>Muntah berlebihan (biru) atau diare berat.</li>
+                                <li>Lesu, tidak mau menyusu/makan.</li>
+                                <li>Timbul bintik merah/ungu di kulit.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top:20px;">
+                    <div class="guide-header" style="background:#ECFDF5; color:#047857; border-color:#6EE7B7;">📈 Tumbuh Kembang</div>
+                    <div class="guide-body">
+                        <p style="font-size:0.9rem; margin-bottom:10px;">Lembar Pantau Tumbuh Kembang (Stimulasi Mandiri di Rumah):</p>
+                        <div class="form-row">
+                            <div>
+                                <strong>0 - 6 Bulan:</strong>
+                                <ul class="guide-list" style="font-size:0.85rem;">
+                                    <li>Bermain tepuk tangan senyuman.</li>
+                                    <li>Mengajak bicara saat memandikan/menyusui.</li>
+                                    <li>Menggantung mainan berwarna.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong>6 - 12 Bulan:</strong>
+                                <ul class="guide-list" style="font-size:0.85rem;">
+                                    <li>Melatih tengkurap, duduk, merangkak.</li>
+                                    <li>Bermain cak-cak bu/bunyi lain.</li>
+                                    <li>Menunjuk gambar di buku cerita.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. REKAP DATA + EXPORT EXCEL -->
+            <section id="rekap" class="section">
+                <div class="card">
+                    <h3>Rekapitulasi Data Sistem</h3>
+                    <div style="margin-top:20px; padding:15px; background:#F3F4F6; border-radius:8px;">
+                        <p><strong>Total Ibu Hamil:</strong> <span id="recap-ibu">0</span></p>
+                        <p><strong>Total Anak:</strong> <span id="recap-anak">0</span></p>
+                        <p><strong>Status Penyimpanan:</strong> LocalStorage Browser (Privasi Terjaga).</p>
+                    </div>
+                    
+                    <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h4 style="margin-bottom:5px;">Download Laporan</h4>
+                            <p style="font-size:0.9rem; color:var(--text-gray);">Simpan data lengkap ke file Excel (.xlsx)</p>
+                        </div>
+                        <button class="btn btn-excel" onclick="exportToExcel()">
+                            📥 Download Rekap Excel (XLSX)
+                        </button>
+                    </div>
+
+                    <button class="btn btn-danger" style="margin-top:30px;" onclick="clearAllData()">⚠️ Reset / Hapus Semua Data</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL IBU (FORM) -->
+    <div class="modal" id="modal-ibu">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Data Identitas Ibu Hamil</h3>
+                <button onclick="closeModal('modal-ibu')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="form-ibu" onsubmit="event.preventDefault(); saveIbu();">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap Ibu</label>
+                    <input type="text" class="form-control" id="ibu-nama" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">NIK (Wajib 16 Digit)</label>
+                        <input type="number" class="form-control" id="ibu-nik" placeholder="320..." required minlength="16" maxlength="16">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Lahir (Untuk Usia Otomatis)</label>
+                        <input type="date" class="form-control" id="ibu-dob" onchange="calculateMotherAge()">
+                        <div id="ibu-usia-hasil" class="result-box"></div>
+                        <input type="hidden" id="ibu-usia-hidden">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Alamat Lengkap</label>
+                    <textarea class="form-control" id="ibu-alamat" placeholder="Nama Jalan, RT/RW, Desa..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nama Suami</label>
+                        <input type="text" class="form-control" id="ibu-suami">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">No. HP (Kontak Darurat)</label>
+                        <input type="tel" class="form-control" id="ibu-hp">
+                    </div>
+                </div>
+                <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+                <h4 style="margin-bottom:10px; color:var(--primary);">Data Kehamilan</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">HPHT</label>
+                        <input type="date" class="form-control" id="ibu-hpht" required onchange="calcHPL()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">HPL (Otomatis)</label>
+                        <input type="text" class="form-control" id="ibu-hpl" readonly style="background:#eee;">
+                    </div>
+                </div>
+                <div id="ibu-usia-kehamilan-hasil" class="result-box"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">G (Gesta)</label>
+                        <input type="number" class="form-control" id="ibu-g" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">P (Partus)</label>
+                        <input type="number" class="form-control" id="ibu-p" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">A (Abortus)</label>
+                        <input type="number" class="form-control" id="ibu-a" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Data Ibu</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ANC (PEMERIKSAAN) -->
+    <div class="modal" id="modal-anc">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Catatan Pemeriksaan Kehamilan (ANC)</h3>
+                <button onclick="closeModal('modal-anc')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="form-anc" onsubmit="event.preventDefault(); saveANC();">
+                <input type="hidden" id="anc-id">
+                <div style="background:#ECFDF5; padding:10px; margin-bottom:15px; border-radius:6px;">
+                    <strong>Ibu:</strong> <span id="anc-nama-ibu"></span><br>
+                    <small>Cek berat badan, tekanan darah, dan pemberian tablet tambah darah.</small>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Periksa</label>
+                        <input type="date" class="form-control" id="anc-tgl" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usia Hamil (Minggu)</label>
+                        <input type="number" class="form-control" id="anc-um" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tekanan Darah</label>
+                        <input type="text" class="form-control" id="anc-td" placeholder="120/80" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Berat Badan (kg)</label>
+                        <input type="number" step="0.1" class="form-control" id="anc-bb" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tinggi Fundus Uterus (TFU)</label>
+                        <input type="text" class="form-control" id="anc-tfu">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lingkar Lengan Atas (LILA)</label>
+                        <input type="number" step="0.1" class="form-control" id="anc-lila">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tablet Fe (Jumlah)</label>
+                        <input type="number" class="form-control" id="anc-fe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Imunisasi TT</label>
+                        <select class="form-control" id="anc-tt">
+                            <option value="Tidak">Belum/Tidak</option>
+                            <option value="TT1">TT 1</option>
+                            <option value="TT2">TT 2</option>
+                            <option value="TT3">TT 3</option>
+                            <option value="TT4">TT 4</option>
+                            <option value="TT5">TT 5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hasil USG / Keterangan Lain</label>
+                    <textarea class="form-control" id="anc-usg" placeholder="Letak janin, detak jantung, dll"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Pemeriksaan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL IBU -->
+    <div class="modal" id="modal-detail-ibu">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Detail & Riwayat Ibu</h3>
+                <button onclick="closeModal('modal-detail-ibu')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="detail-content"></div>
+            <hr>
+            <h4>Riwayat ANC</h4>
+            <div style="max-height:200px; overflow-y:auto; margin-top:10px;">
+                <table style="font-size:0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Tgl</th>
+                            <th>Um</th>
+                            <th>BB</th>
+                            <th>TD</th>
+                            <th>Fe/TT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-anc"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ANAK (FORM) -->
+    <div class="modal" id="modal-anak">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Data Anak & Balita</h3>
+                <button onclick="closeModal('modal-anak')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="form-anak" onsubmit="event.preventDefault(); saveAnak();">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap Anak</label>
+                    <input type="text" class="form-control" id="anak-nama" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Lahir</label>
+                    <input type="date" class="form-control" id="anak-dob" required onchange="calculateChildAge()">
+                    <div id="anak-usia-hasil" class="result-box"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Jenis Kelamin</label>
+                        <select class="form-control" id="anak-jk">
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nama Ibu (Ortu)</label>
+                        <input type="text" class="form-control" id="anak-ibu" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">NIK Anak (Jika ada, 16 Digit)</label>
+                    <input type="number" class="form-control" id="anak-nik" placeholder="Jika ada" minlength="16" maxlength="16">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Data Anak</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL KUNJUNGAN ANAK (TIMBANG) -->
+    <div class="modal" id="modal-visit-anak">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Pantau Tumbuh Kembang & Imunisasi</h3>
+                <button onclick="closeModal('modal-visit-anak')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <form id="form-visit-anak" onsubmit="event.preventDefault(); saveVisitAnak();">
+                <input type="hidden" id="visit-id">
+                <div style="background:#ECFDF5; padding:10px; margin-bottom:15px; border-radius:6px;">
+                    <strong>Anak:</strong> <span id="visit-nama-anak"></span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Kunjungan</label>
+                        <input type="date" class="form-control" id="visit-tgl" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usia (Bulan)</label>
+                        <input type="number" class="form-control" id="visit-umur" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Berat Badan (kg)</label>
+                        <input type="number" step="0.01" class="form-control" id="visit-bb" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tinggi Badan (cm)</label>
+                        <input type="number" step="0.1" class="form-control" id="visit-tb">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Lingkar Kepala (cm)</label>
+                        <input type="number" step="0.1" class="form-control" id="visit-lk">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vitamin A</label>
+                        <select class="form-control" id="visit-vit">
+                            <option value="Tidak">Tidak</option>
+                            <option value="Biru">Biru (6-11 bln)</option>
+                            <option value="Merah">Merah (12-59 bln)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Imunisasi Diterima</label>
+                    <input type="text" class="form-control" id="visit-imun" placeholder="Contoh: DPT 1, Polio 2">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Hasil Timbangan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL GRAFIK BERAT BADAN -->
+    <div class="modal" id="modal-grafik">
+        <div class="modal-content modal-chart-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div>
+                    <h3>Grafik Pertumbuhan Berat Badan</h3>
+                    <p id="grafik-subtitle" style="color:var(--text-gray); font-size:0.9rem;">Riwayat berat badan anak</p>
+                </div>
+                <button onclick="closeModal('modal-grafik')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div class="card" style="border:1px solid var(--border); padding:10px;">
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+            
+            <div style="margin-top:15px; text-align:right;">
+                <button class="btn btn-secondary" onclick="closeModal('modal-grafik')">Tutup</button>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>
